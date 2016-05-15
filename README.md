@@ -1,5 +1,5 @@
 # Ubuntu Software Update Script
-Simple Bash script to sit on the desktop. When clicked, the update.sh script runs apt-get update, upgrade and clean.
+Simple Bash script to sit on the desktop. When clicked, the update.sh script runs apt-get update, upgrade, dist-upgrade and clean.
 
 * You only need to download update.sh
 * I keep the script on my desktop so I can click it any time I want to check and install software updates.
