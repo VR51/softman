@@ -23,6 +23,8 @@ The update script released to this Github repo is a self contained version of an
 * Can be run from the command line with arguments passed to it
 * Can be included within another script as a source file (with minor changes. The library version is slightly different).
 
+## Commandline Options
+
 - upgrade: update/upgrade the system software with suggested build dependent packages
 - install: install software with suggested build dependent packages
 - reinstall: reinstall software with suggested build dependent packages
