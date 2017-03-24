@@ -1,4 +1,4 @@
-# Ubuntu Software Update Script
+# Ubuntu/Debian Linux Software Update Script
 Simple Bash script to sit on the desktop. When clicked, the softman script runs apt-get update, upgrade, dist-upgrade, full-upgrade and clean.
 
 * You only need to download the file 'softman'.
