@@ -5,6 +5,8 @@ clear
 #
 #	Softman 1.0.0
 #
+#	Copyright Lee Hodson @VR51
+#
 #	See function 'softman' for options
 #
 #	function list: run, message, softman, launch
@@ -98,7 +100,7 @@ function softman() {
 	#
 	##
 
-	# apt-get update
+	sudo apt-get update
 	
 	options='--install-suggests --show-progress'
 	_options='--install-suggests'
