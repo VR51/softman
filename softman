@@ -1,0 +1,246 @@
+#!/bin/bash
+clear
+
+##
+#
+#	Softman 1.0.0
+#
+#	See function 'softman' for options
+#
+#	function list: run, message, softman, launch
+#
+#	Program boots at the bottom with run "$@"
+#
+#
+#	Run options:
+#
+#		sudo ./softman
+#		click 'softman'
+#		load into script as a source file
+#
+##
+
+## Receive script arguments and process them -- See 'run' at bottom of script
+
+function run() {
+	## Process args
+
+	## Send to softman
+	if test $# == 0; then # no args = run softman upgrade
+	
+		tty -s
+		if test "$?" -ne 0 ; then
+			launch softman
+		else
+			sudo -v
+			softman launch
+		fi
+		
+	elif test $# == 1; then
+	
+		softman "$arg"
+		
+	else
+	
+		arg="$1"
+		shift
+		declare -a args
+
+		for i in "$@"
+		do
+			args+=( "$1" )
+			shift
+		done
+		
+		softman "$arg" "${args[*]}"
+		
+	fi
+}
+
+## Message
+
+function message() {
+	printf "\n\nsoftman service completed: $arg\n"
+}
+
+## Run softman
+
+function softman() {
+
+	##
+	#
+	#	Softman 1.0.0
+	#
+	#	Install or reinstall packages with build dependencies.
+	#	Update system
+	#	Build binaries from source
+	#
+	#		Written to solve a Linux World problem
+	#
+	#	softman arg args
+	#
+	#	@1 = install,upgrade,reinstall,flush,build,findbad,fixbad,rebuildsystem:
+	#				are we to install, reinstall or upgrade packages;
+	#				are we to compile a .deb from source;
+	#				are we to clean the cache;
+	#				are we to find and/or fix installed packages that are corrupted;
+	#				are we to find and/or reinstall packages with missing files;
+	#				are we to re-install every package with rebuildsystem?
+	#	@2 = list of packages to (re)install: space separated list of packages.
+	# 
+	#	Copyright Lee Hodson @ VR51 & JournalXtra
+	#
+	#
+	#	EXAMPLE USAGE
+	#
+	# softman install 'simplescreenrecorder gimp vlc'
+	# softman reinstall 'simplescreenrecorder gimp vlc'
+	#
+	##
+
+	# apt-get update
+	
+	options='--install-suggests --show-progress'
+	_options='--install-suggests'
+	
+	case $1 in
+	
+	launch)
+		sudo apt-get $options upgrade
+		sudo apt-get $options dist-upgrade
+		sudo apt-get $options full-upgrade
+		sudo apt-get clean
+		sudo apt-get autoremove
+		message
+		read something
+	;;
+	
+	upgrade)
+		apt-get $options upgrade
+		apt-get $options dist-upgrade
+		apt-get $options full-upgrade
+		
+	;;
+
+	install)
+
+		for i in ${2}; do
+				apt-get $_options build-dep "$i"
+				apt-get $options install "$i"
+		done
+
+	;;
+
+	reinstall)
+
+		for i in ${2}; do
+				apt-get $_options build-dep "$i"
+				apt-get install $options --reinstall "$i"
+		done
+
+	;;
+	
+	findbad)
+	
+		if command -v debsums > /dev/null 2>&1; then
+				apt-get clean
+				debsums_init ; debsums -cs
+				# debsums -es
+		else
+				softman install debsums
+				softman findbad
+		fi
+		
+	
+	;;
+	
+	fixbad)
+	
+		if command -v debsums > /dev/null 2>&1; then
+				apt-get clean
+				apt-get install $options --reinstall $(dpkg -S $(debsums -c) | cut -d : -f 1 | sort -u)
+		else
+				softman install debsums
+				softman fixbad
+				# debsums -es
+		fi
+	
+	;;
+	
+	fixmissing)
+	
+		if command -v debsums > /dev/null 2>&1; then
+				apt-get clean
+				debsums -c 2>&1 | cut -d " " -f 4 | sort -u | xargs -rd '\n' -- dpkg -S | cut -d : -f 1 | sort -u | xargs -rd '\n' -- apt-get install $options --reinstall
+		else
+				softman install debsums
+				softman fixmissing
+		fi
+	
+	;;
+	
+	rebuildsystem)
+	
+			dpkg -l | grep '^ii ' | sed 's/  */\t/g' |cut -f 2,3 | sed 's/\t/=/' | xargs apt-get install --reinstall -y --ignore-missing
+			
+			# See: http://unix.stackexchange.com/questions/79028/debian-install-missing-man-pages
+	
+	;;
+	
+	build)
+	
+		for i in ${2}; do
+			apt-get $options --compile source "$i"
+		done
+	;;
+	
+	flush)
+	
+		apt-get clean
+		apt-get autoremove
+	
+	;;
+
+	*)
+
+		return 2
+
+	;;
+
+	esac
+	
+	message
+
+}
+
+
+## launch terminal
+
+function launch() {
+		# This code section is released in public domain by Han Boetes <han@mijncomputer.nl>
+		# Updated by Dave Davenport <qball@gmpclient.org>
+		# Updated by Lee Hodson <https://journalxtra.com> - Added break on successful hit, added more terminals, humanized the failure message, replaced call to rofi with printf and made $terminal an array for easy reuse.
+		#
+		# This script tries to exec a terminal emulator by trying some known terminal
+		# emulators.
+		#
+		# We welcome patches that add distribution-specific mechanisms to find the
+		# preferred terminal emulator. On Debian, there is the x-terminal-emulator
+		# symlink for example.
+
+		terminal=( x-terminal-emulator xdg-terminal konsole gnome-terminal terminator urxvt rxvt Eterm aterm roxterm xfce4-terminal termite lxterminal xterm )
+		for i in ${terminal[@]}; do
+			if command -v $i > /dev/null 2>&1; then
+				exec $i -e "$0"
+				# break
+			else
+				printf "\nUnable to automatically determine the correct terminal program to run e.g Console or Konsole. Please run this program from a terminal AKA the command line.\n"
+				read something
+				exit 1
+			fi
+		done
+}
+
+## Boot
+
+run "$@"
