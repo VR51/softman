@@ -3,13 +3,13 @@ clear
 
 ##
 #
-#	Softman 1.0.0
+#	Softman 1.0.1
 #
 #	Copyright Lee Hodson @VR51
 #
-#	See function 'softman' for options
+#	See function 'softman' for options or type './softman -h'
 #
-#	function list: run, message, softman, launch
+#	function list: run, message, softman, launch, about
 #
 #	Program boots at the bottom with run "$@"
 #
@@ -20,12 +20,55 @@ clear
 #		click 'softman'
 #		load into script as a source file
 #
+#	Options:
+#
+#		upgrade, install, reinstall, findbad, fixbad, fixmissing, build, rebuildsystem, flush
+#
+#		Run with -u to update software repositories (equivalent to apt-get update)
+#
+#	Help = ./softman -h
+#
 ##
+
+version='SoftMan 1.0.1'
 
 ## Receive script arguments and process them -- See 'run' at bottom of script
 
 function run() {
 	## Process args
+	
+	while getopts ":uhv" opts ; do
+		case $opts in
+		
+		u)
+		
+			apt-get update
+			shift
+		;;
+		
+		h)
+		
+			about
+			exit
+		
+		;;
+		
+		v)
+		
+			echo "$version"
+			exit
+		
+		;;
+		
+		*)
+		
+			return 1
+		
+		;;
+		
+		esac
+		
+	done
 
 	## Send to softman
 	if test $# == 0; then # no args = run softman upgrade
@@ -40,6 +83,8 @@ function run() {
 		
 	elif test $# == 1; then
 	
+		arg="$1"
+		shift	
 		softman "$arg"
 		
 	else
@@ -100,14 +145,13 @@ function softman() {
 	#
 	##
 
-	sudo apt-get update
-	
 	options='--install-suggests --show-progress'
 	_options='--install-suggests'
 	
 	case $1 in
 	
 	launch)
+		sudo apt-get update
 		sudo apt-get $options upgrade
 		sudo apt-get $options dist-upgrade
 		sudo apt-get $options full-upgrade
@@ -215,6 +259,57 @@ function softman() {
 
 }
 
+function about() {
+
+bold=$(tput bold)
+normal=$(tput sgr0)
+
+cat <<HELP
+
+${bold}SOFTMAN${normal}
+
+SoftMan (Software Manager) is mostly a wrapper around frequently used apt-get command sequences, plus a few repair tools. Beside the repair tools, the main difference between softman and apt-get is that softman always grabs build dependencies before it installs requested packages.
+
+${bold}USAGE${normal}
+
+	Use ${bold}sudo softman OPTION${normal} to manage software without first updating the package list.
+	Use as ${bold}sudo softman -u OPTION${normal} to manage software with package list update first.
+
+${bold}FLAGS${normal}
+
+	${bold}-u${normal} is equivalent to sudo apt-get update
+
+${bold}OPTIONS${normal}
+
+	${bold}upgrade${normal}: update/upgrade the system software with suggested build dependent packages.
+	${bold}install${normal}: install software with suggested build dependent packages.
+	${bold}reinstall${normal}: reinstall software with suggested build dependent packages.
+	${bold}findbad${normal}: find packages with corrupt files / find packages with missing files.
+	${bold}fixbad${normal}: find currupt software and automatically reinstall their packages. Use with caution.
+	${bold}fixmissing${normal}: find software with missing files and automatically reinstall their packages. Use with caution.
+	${bold}rebuildsystem${normal}: reinstall all installed software. Use with extreme caution.
+	${bold}build${normal}: download package source files and compile into a .deb binary file ready for installation
+	${bold}flush${normal}: clear the download cache and automatically remove packages that are no longer required.
+
+${bold}EXAMPLES${normal}
+
+	${bold}softman -u${normal} will only download the list of available packages.
+	${bold}softman -u install gimp${normal} will download the up-to-date list of packages available to the system then install gimp
+	${bold}softman -u install gimp kate amarok${normal} will download the up-to-date list of packages available to the system then reinstall gimp, kate and amorok.
+
+${bold}VERSION${normal}
+	
+	$version
+	
+${bold}AUTHOR${normal}
+
+	${bold}Lee Hodson${normal} as found at https://journalxtra.com/
+	${bold}Information${normal} https://journalxtra.com/linux/free-linux-software-update-script/
+	
+HELP
+
+
+}
 
 ## launch terminal
 
