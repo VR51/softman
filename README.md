@@ -8,13 +8,6 @@ Simple Bash script to sit on the desktop. Mostly a wrapper for frequently used a
 
 I keep the script on my desktop so I can click it any time I want to check for updates and install them without need to type various apt-get sequences.
 
-# History
-This began as a simple update script to keep on the desktop and click to quickly run system software updates. Now it is so much more.
-
-SoftMan (Software Manager) is part of a library of scripts I wrote and frequently use in Linux projects. This library will soon be released on Github for others to make use of in their own Bash projects.
-
-The update script released to this Github repo is a selfcontained version of an update and software (re)installation script. It is mostly a wrapper for frequently used apt-get command sequences but also includes commands to automatically reinstall software packages that contain corrupt files (e.g. after hardware crash, malware infection or self-inflicted damage when a script runs amock).
-
 ## Features
 
 * Updates the system when clicked.
@@ -37,9 +30,9 @@ The update script released to this Github repo is a selfcontained version of an 
 
 ## Commandline Option Flags
 
--u: Run apt-get update
--h: Show helpfile
--v: Show version number
+- -u: Run apt-get update
+- -h: Show helpfile
+- -v: Show version number
 
 ## Usage
 
@@ -66,6 +59,12 @@ The following command will either fix or destroy your system. Should be safe to 
 ```
 sudo ./softman rebuildsystem
 ```
+# History
+This began as a simple update script to keep on the desktop and click to quickly run system software updates. Now it is so much more.
+
+SoftMan (Software Manager) is part of a library of scripts I wrote and frequently use in Linux projects. This library will soon be released on Github for others to make use of in their own Bash projects.
+
+The update script released to this Github repo is a selfcontained version of an update and software (re)installation script. It is mostly a wrapper for frequently used apt-get command sequences but also includes commands to automatically reinstall software packages that contain corrupt files (e.g. after hardware crash, malware infection or self-inflicted damage when a script runs amock).
 
 # Why?
 Because opening a terminal to run updates is too much hassle and I'm too lazy to use GUI options that take forever to load. Plus, I needed an update library and installer for other scripts.
