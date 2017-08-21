@@ -1,5 +1,5 @@
 # Ubuntu/Debian Linux Software Update Script
-Simple Bash script to sit on the desktop. Mostly a wrapper for frequently used apt-get command sequences but with bonus repair tools. When clicked, the softman script runs apt-get update, upgrade, dist-upgrade, full-upgrade and clean. Other run options are described below.
+Simple Bash script to sit on the desktop. Mostly a wrapper for frequently used apt-get command sequences but with bonus system repair tools. When clicked, the softman script runs apt-get update, upgrade, dist-upgrade, full-upgrade and clean. Other run options are described below.
 
 * You only need to download the file 'softman'.
 * Make the file executable (desktop users: right-click then select 'executable')
@@ -10,6 +10,8 @@ I keep the script on my desktop so I can click it any time I want to check for u
 
 ## Features
 
+* Adds, removes and lists installed repositories.
+* Finds available software pacakges.
 * Updates the system when clicked.
 * Accepts commandline arguments.
 * Will execute 'softman upgrade' when clicked
@@ -19,8 +21,14 @@ I keep the script on my desktop so I can click it any time I want to check for u
 ## Commandline Options
 
 - upgrade: update/upgrade the system software with suggested build dependent packages
+- list: show installed repositories.
+- add: add a repository
+- remove: remove a repository but keep software installed from the repository
+- purge: remove a repository and remove sotware installed from the repository, install alternate software version if available in another installed repository.
+- find: find software
 - install: install software with suggested build dependent packages
 - reinstall: reinstall software with suggested build dependent packages
+- fix: fix broken packages and configure any partially installed software
 - findbad: find packages with corrupt files / find packages with missing files
 - fixbad: find currupt software and automatically reinstall their packages. Use with caution.
 - fixmissing: find software with missing files and automatically reinstall their packages. Use with caution.
@@ -36,6 +44,36 @@ I keep the script on my desktop so I can click it any time I want to check for u
 
 ## Usage
 
+Use 'softman list' to list installed repositories.
+
+```
+sudo ./softman list
+```
+
+Use 'softman add' to add a repository. Multiple repositories can be added at the same time, e.g,
+
+```
+sudo ./softman add ppa:florian-rival/gdevelop
+```
+
+Use 'softman remove' to remove a repository. Multiple repositories can be added at the same time, e.g,
+
+```
+sudo ./softman remove ppa:florian-rival/gdevelop
+```
+
+Use 'softman purge' to remove a repository, to remove software installed from the repository and to install alternate software versions of removed software if those versions are available. Multiple repositories can be added at the same time, e.g,
+
+```
+sudo ./softman purge ppa:florian-rival/gdevelop
+```
+
+Use 'softman find' to search for software available in the installed repositories, e.g,
+
+```
+sudo ./softman find gimp php* alsa*
+```
+
 Use 'softman install' and 'softman reinstall' as you would apt-get install, i.e. list packages after the command, e.g.
 
 ```
@@ -46,11 +84,26 @@ and
 sudo ./softman reinstall vlc gimp kate
 ```
 
-The following commands are safe to use but exercise caution:
+Use 'softman fix' to fix broken packages and to configure any partially installed software, e.g,
+
+```
+sudo ./softman fix
+```
+## The following commands are safe to use but exercise caution
+Use 'softman findbad' to list corrupt files, e.g,
+
+```
+sudo ./softman findbad
+```
+
+Use 'softman fixbad' to repair/replace corrupt files, e.g,
+
 ```
 sudo ./softman fixbad
 ```
-and
+
+Use 'softman fixmissing' to replace missing software files, e.g,
+
 ```
 sudo ./softman fixmissing
 ```
@@ -60,7 +113,7 @@ The following command will either fix or destroy your system. Should be safe to 
 sudo ./softman rebuildsystem
 ```
 # History
-This began as a simple update script to keep on the desktop and click to quickly run system software updates. Now it is so much more.
+This began as a simple system update script to keep on the desktop and click to quickly run system software updates. Now it is so much more.
 
 SoftMan (Software Manager) is part of a library of scripts I wrote and frequently use in Linux projects. This library will soon be released on Github for others to make use of in their own Bash projects.
 
