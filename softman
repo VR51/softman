@@ -18,7 +18,8 @@
 #
 #		sudo ./softman or sudo bash ./softman
 #		click 'softman'
-#		load into script as a source file
+#		can be loaded into script as a source file
+#		try ./softman -h to see help text.
 #
 #	Options:
 #
