@@ -1,28 +1,53 @@
 #!/bin/bash
-clear
+# clear
 
 ##
 #
-#	Softman 1.0.1
+#	Softman 1.0.2
 #
 #	Copyright Lee Hodson @VR51
 #
 #	See function 'softman' for options or type './softman -h'
 #
-#	function list: run, softman, launch, message, about
+#	function list: run, softman, launch, message, about. See Options for feature list.
 #
 #	Program boots at the bottom with run "$@"
 #
 #
 #	Run options:
 #
-#		sudo ./softman
+#		sudo ./softman or sudo bash ./softman
 #		click 'softman'
 #		load into script as a source file
 #
 #	Options:
 #
-#		upgrade, install, reinstall, findbad, fixbad, fixmissing, build, rebuildsystem, flush
+#		upgrade, list, add, find, install, reinstall, fix, findbad, fixbad, fixmissing, build, rebuildsystem, flush
+#
+#			upgrade # Upgrades the system software.
+#
+#		Repository Tools
+#
+#			list # list all installed repositories.
+#			add <PPA> <PPA> <PPA> # Add a repository. Typically PPA repository.
+#			remove <PPA> <PPA> <PPA> # Remove a repository. Typically PPA repository.
+#			purge <PPA> <PPA> <PPA> # Purge a repository. Typically PPA repository. This removes software installed from the repository, installs the distro version when available.
+#
+#		Software Tools
+#
+#			find <package> <package> <package>... # to find package information
+#			install <package> <package> <package>... # to install a package or list of packages with recommended dependencies. Wildcards allowed.
+#			reinstall <package> <package> <package>... # to reinstall a package or list of packages with recommended dependencies. Wildcards allowed.
+#			build # Builds software provided as source.
+#			flush # Cleans the apt cache.
+#
+#		System Repair Tools
+#
+#			fix # to attempt to fix packages with broken dependencies and/or repair a slightly broken system.
+#			findbad # Attempts to find software with corrupt files
+#			fixbad # Attempts to fix software with corrupt files
+#			rebuildsystem # Attempts to fully re-install / rebuild all software currently installed in the system.
+#
 #
 #		Run with -u to update software repositories (equivalent to apt-get update)
 #
@@ -30,7 +55,12 @@ clear
 #
 ##
 
-version='SoftMan 1.0.1'
+#
+#	Cycle with $options or $_options then $__options (no suggests) : this resolves big downloads
+# Adapt to allow both array and none array variable inputs
+#
+
+version='SoftMan 1.0.2'
 
 ## Receive script arguments and process them -- See 'run' at bottom of script
 
@@ -120,14 +150,20 @@ function softman() {
 	#
 	#	softman arg args
 	#
-	#	@1 = install,upgrade,reinstall,flush,build,findbad,fixbad,rebuildsystem:
-	#				are we to install, reinstall or upgrade packages;
-	#				are we to compile a .deb from source;
-	#				are we to clean the cache;
-	#				are we to find and/or fix installed packages that are corrupted;
-	#				are we to find and/or reinstall packages with missing files;
+	#	@1 = upgrade, list, add, remove, purge, find, install, reinstall, build, flush, fix, findbad, fixbad, rebuildsystem:
+	#				are we to list all installed repositories;
+	#				are we to add a repository;
+	#				are we to remove a repository;
+	#				are we to purge a repository and remove software installed by it or replace the software by distro provided software;
+	#				are we to find packages;
+	#				are we to install, reinstall, build or upgrade packages;
 	#				are we to re-install every package with rebuildsystem?
-	#	@2 = list of packages to (re)install: space separated list of packages.
+	#				are we to compile a .deb from source;
+	#				are we to fix a broken package;
+	#				are we to clean the cache;
+	#				are we to find or fix installed packages that are corrupted;
+	#				are we to find and reinstall packages with missing files;
+		#	@2 = list of packages to (re)install: space separated list of packages.
 	# 
 	#	Copyright Lee Hodson @ VR51 & JournalXtra
 	#
@@ -141,7 +177,7 @@ function softman() {
 
 	options='--install-suggests --show-progress'
 	_options='--install-suggests'
-	
+
 	case $1 in
 	
 	launch)
@@ -162,26 +198,76 @@ function softman() {
 		
 	;;
 
-	install)
+	list)
+		apt-cache policy | grep http | awk '{print $2 $3}' | sort -u
+	;;
 
+	add)
+		for i in ${2}; do
+			add-apt-repository "$i"
+		done
+		
+		apt-get update
+	;;
+
+	remove)
+		for i in ${2}; do
+			add-apt-repository --remove "$i"
+		done
+
+		apt-get update
+	;;
+
+	purge)
+		if command -v ppa-purge > /dev/null 2>&1; then
+			for i in ${2}; do
+				ppa-purge "$i"
+			done
+		else
+			softman install ppa-purge
+			softman purge ${2}
+		fi
+
+		apt-get update
+	;;
+
+	find)
+		for i in ${2}; do
+			apt-cache search "$i"
+		done
+	;;
+
+	install)
 		for i in ${2}; do
 				apt-get $_options build-dep "$i"
 				apt-get $options install "$i"
 		done
-
 	;;
 
 	reinstall)
-
 		for i in ${2}; do
 				apt-get $_options build-dep "$i"
 				apt-get install $options --reinstall "$i"
 		done
+	;;
 
+	build)
+		for i in ${2}; do
+			apt-get $options --compile source "$i"
+		done
+	;;
+	
+	flush)
+		apt-get clean
+		apt-get autoremove
+	;;
+
+	fix)
+		sudo apt-get install -f
+		sudo dpkg --configure -a
 	;;
 	
 	findbad)
-	
 		if command -v debsums > /dev/null 2>&1; then
 				apt-get clean
 				debsums_init ; debsums -cs
@@ -190,12 +276,9 @@ function softman() {
 				softman install debsums
 				softman findbad
 		fi
-		
-	
 	;;
-	
+
 	fixbad)
-	
 		if command -v debsums > /dev/null 2>&1; then
 				apt-get clean
 				apt-get install $options --reinstall $(dpkg -S $(debsums -c) | cut -d : -f 1 | sort -u)
@@ -204,11 +287,9 @@ function softman() {
 				softman fixbad
 				# debsums -es
 		fi
-	
 	;;
-	
+
 	fixmissing)
-	
 		if command -v debsums > /dev/null 2>&1; then
 				apt-get clean
 				debsums -c 2>&1 | cut -d " " -f 4 | sort -u | xargs -rd '\n' -- dpkg -S | cut -d : -f 1 | sort -u | xargs -rd '\n' -- apt-get install $options --reinstall
@@ -216,29 +297,12 @@ function softman() {
 				softman install debsums
 				softman fixmissing
 		fi
-	
 	;;
 	
 	rebuildsystem)
-	
 			dpkg -l | grep '^ii ' | sed 's/  */\t/g' |cut -f 2,3 | sed 's/\t/=/' | xargs apt-get install --reinstall -y --ignore-missing
 			
 			# See: http://unix.stackexchange.com/questions/79028/debian-install-missing-man-pages
-	
-	;;
-	
-	build)
-	
-		for i in ${2}; do
-			apt-get $options --compile source "$i"
-		done
-	;;
-	
-	flush)
-	
-		apt-get clean
-		apt-get autoremove
-	
 	;;
 
 	*)
@@ -282,14 +346,29 @@ ${bold}FLAGS${normal}
 ${bold}OPTIONS${normal}
 
 	${bold}upgrade${normal}: update/upgrade the system software with suggested build dependent packages.
-	${bold}install${normal}: install software with suggested build dependent packages.
-	${bold}reinstall${normal}: reinstall software with suggested build dependent packages.
-	${bold}findbad${normal}: find packages with corrupt files / find packages with missing files.
-	${bold}fixbad${normal}: find currupt software and automatically reinstall their packages. Use with caution.
-	${bold}fixmissing${normal}: find software with missing files and automatically reinstall their packages. Use with caution.
-	${bold}rebuildsystem${normal}: reinstall all installed software. Use with extreme caution.
+	
+${bold}REPOSITORY TOOLS${normal}
+
+	${bold}list${normal}: List all installed repositories.
+	${bold}add${normal}: Add a PPA repository. Separate with a space multiple repositories listed together.
+	${bold}remove${normal}: Remove a PPA repository. Separate with a space multiple repositories listed together.
+	${bold}purge${normal}: Purge a repository. Typically PPA repository. This removes software installed from the repository, installs the distro version when available.
+	
+${bold}SOFTWARE TOOLS${normal}
+	
+	${bold}find${normal}: locate a package or list of packages available for installation. Wildcards allowed.
+	${bold}install${normal}: install software with suggested build dependent packages. Wildcards allowed.
+	${bold}reinstall${normal}: reinstall software with suggested build dependent packages. Wildcards allowed.
 	${bold}build${normal}: download package source files and compile into a .deb binary file ready for installation
 	${bold}flush${normal}: clear the download cache and automatically remove packages that are no longer required.
+	
+${bold}SYSTEM REPAIR TOOLS${normal}
+
+	${bold}fix${normal}: fix broken packages and configure partially installed software.
+	${bold}findbad${normal}: find packages with corrupt files / find packages with missing files.
+	${bold}fixbad${normal}: find curupt software and automatically reinstall their packages. Use with caution.
+	${bold}fixmissing${normal}: find software with missing files and automatically reinstall their packages. Use with caution.
+	${bold}rebuildsystem${normal}: reinstall all installed software. Use with extreme caution.
 
 ${bold}EXAMPLES${normal}
 
