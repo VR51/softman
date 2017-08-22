@@ -3,7 +3,7 @@
 
 ##
 #
-#	Softman 1.0.2
+#	Softman 1.0.3 (August 2017)
 #
 #	Copyright Lee Hodson @VR51
 #
@@ -18,8 +18,7 @@
 #
 #		sudo ./softman or sudo bash ./softman
 #		click 'softman'
-#		can be loaded into script as a source file
-#		try ./softman -h to see help text.
+#		load into script as a source file
 #
 #	Options:
 #
@@ -47,6 +46,7 @@
 #			fix # to attempt to fix packages with broken dependencies and/or repair a slightly broken system.
 #			findbad # Attempts to find software with corrupt files
 #			fixbad # Attempts to fix software with corrupt files
+#			fixmissing # Attempts to fix software that is broken because of missing files
 #			rebuildsystem # Attempts to fully re-install / rebuild all software currently installed in the system.
 #
 #
@@ -61,7 +61,7 @@
 # Adapt to allow both array and none array variable inputs
 #
 
-version='SoftMan 1.0.2'
+version='SoftMan 1.0.3'
 
 ## Receive script arguments and process them -- See 'run' at bottom of script
 
@@ -234,8 +234,12 @@ function softman() {
 
 	find)
 		for i in ${2}; do
-			apt-cache search "$i"
+			items+=$( apt-cache search "$i" )
 		done
+
+		IFS=$'\n' sorted=($(sort <<<"${items[*]}"))
+		unset IFS
+		printf "%s\n" "${sorted[@]}"
 	;;
 
 	install)
@@ -345,6 +349,8 @@ ${bold}FLAGS${normal}
 	${bold}-u${normal} is equivalent to sudo apt-get update
 
 ${bold}OPTIONS${normal}
+
+${bold}BASIC TOOL${normal}
 
 	${bold}upgrade${normal}: update/upgrade the system software with suggested build dependent packages.
 	
