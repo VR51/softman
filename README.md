@@ -1,40 +1,64 @@
-# Ubuntu/Debian Linux Software Update Script
-Simple Bash script to sit on the desktop. Mostly a wrapper for frequently used apt-get command sequences but with bonus system repair tools. When clicked, the softman script runs apt-get update, upgrade, dist-upgrade, full-upgrade and clean. Other run options are described below.
+# Ubuntu/Debian Linux Software Update, Software Manager and Software Repair Tool
+Simple program to put on your desktop to click to run system updates. Softman is mostly a wrapper for frequently used apt-get command sequences but with bonus system repair tools.
 
-* You only need to download the file 'softman'.
+When clicked, Softman will runs apt-get update, upgrade, dist-upgrade, full-upgrade and clean. Other run options are described below.
+
+Choose whether to install the program as a system file or whether to use the program without installation.
+
+## The Installed Version
+
+* Download the .deb file
+* Click the softman.deb file to run the installer
+* Softman will be installed into your computer ready for use like any other program or system command
+* To add softman to your taskbar, search for the program by typing 'softman' into your program launcher (e.g. Kicker) then right-click the icon to pin softman to your taskbar.
+* Click the softman icon to run software updates.
+* Other options need to be run from the command line (Terminal).
+* Read the Features section of this readme to learn the commandline options.
+
+## The Uninstalled Version
+
+* Download the file 'softman'.
 * Make the file executable (desktop users: right-click then select 'executable')
 * Click the file to run software updates
-* Read Features section of this readme to learn the commandline options.
-
-I keep the script on my desktop so I can click it any time I want to check for updates and install them without need to type various apt-get sequences.
+* Read the Features section of this readme to learn the commandline options.
 
 ## Features
 
 * Adds, removes and lists installed repositories.
 * Finds available software pacakges.
-* Updates the system when clicked.
+* Updates the system software when clicked (this is the same as 'softman upgrade').
 * Accepts commandline arguments.
-* Will execute 'softman upgrade' when clicked
-* Can be run from the command line with arguments passed to it
-* Can be included within another script as a source file (with minor changes. The library version is slightly different).
+* Can be run from the command line with arguments passed to it.
+* Can be included within other scripts as a source file (with minor changes. The library version is slightly different).
 
 ## Commandline Options
 
+BASIC
+
 - upgrade: update/upgrade the system software with suggested build dependent packages
+
+REPOSITORY MANAGEMENT
+
 - list: show installed repositories.
 - add: add a repository
 - remove: remove a repository but keep software installed from the repository
 - purge: remove a repository and remove sotware installed from the repository, install alternate software version if available in another installed repository.
+
+SOFTWARE MANAGEMENT
+
 - find: find software
 - install: install software with suggested build dependent packages
 - reinstall: reinstall software with suggested build dependent packages
+- build: download package source files and compile into a .deb binary file ready for installation
+- flush: clear the download cache and automatically remove packages that are no longer required.
+
+SYSTEM REPAIR TOOLS
+
 - fix: fix broken packages and configure any partially installed software
 - findbad: find packages with corrupt files / find packages with missing files
 - fixbad: find currupt software and automatically reinstall their packages. Use with caution.
 - fixmissing: find software with missing files and automatically reinstall their packages. Use with caution.
 - rebuildsystem: reinstall all installed software. Use with extreme caution.
-- build: download package source files and compile into a .deb binary file ready for installation
-- flush: clear the download cache and automatically remove packages that are no longer required.
 
 ## Commandline Option Flags
 
