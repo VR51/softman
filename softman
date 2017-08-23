@@ -3,7 +3,7 @@
 
 ##
 #
-#	Softman 1.0.3 (August 2017)
+#	Softman 1.0.4 (August 2017)
 #
 #	Copyright Lee Hodson @VR51
 #
@@ -22,7 +22,7 @@
 #
 #	Options:
 #
-#		upgrade, list, add, find, install, reinstall, fix, findbad, fixbad, fixmissing, build, rebuildsystem, flush
+#		upgrade, list, add, remove, purge, find, install, reinstall, flush, fix, findbad, fixbad, fixmissing, build, rebuildsystem
 #
 #			upgrade # Upgrades the system software.
 #
@@ -61,7 +61,7 @@
 # Adapt to allow both array and none array variable inputs
 #
 
-version='SoftMan 1.0.3'
+version='SoftMan 1.0.4'
 
 ## Receive script arguments and process them -- See 'run' at bottom of script
 
@@ -200,7 +200,7 @@ function softman() {
 	;;
 
 	list)
-		apt-cache policy | grep http | awk '{print $2 $3}' | sort -u
+		apt-cache policy | grep http | awk '{print $2 $3}' | sort -u | less
 	;;
 
 	add)
@@ -239,7 +239,7 @@ function softman() {
 
 		IFS=$'\n' sorted=($(sort <<<"${items[*]}"))
 		unset IFS
-		printf "%s\n" "${sorted[@]}"
+		printf "%s\n" "${sorted[@]}" | less
 	;;
 
 	install)
