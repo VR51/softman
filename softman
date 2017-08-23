@@ -7,7 +7,7 @@
 #
 #	Copyright Lee Hodson @VR51
 #
-#	See function 'softman' for options or type './softman -h'
+#	See function 'softman' for options or type './softman -h' or if installed 'man softman'
 #
 #	function list: run, softman, launch, message, about. See Options for feature list.
 #
@@ -16,9 +16,18 @@
 #
 #	Run options:
 #
-#		sudo ./softman or sudo bash ./softman
-#		click 'softman'
-#		load into script as a source file
+#		Installed .deb version
+#
+#			1) Type softman into the application Launcher
+#			2) Type softman into the command line
+#			3) Type softman <option> into the command line
+#			4) Use 'man softman' to view help file
+#
+#		Uninstalled version
+#
+#			sudo ./softman or sudo bash ./softman
+#			click 'softman'
+#			load into script as a source file
 #
 #	Options:
 #
@@ -53,6 +62,23 @@
 #		Run with -u to update software repositories (equivalent to apt-get update)
 #
 #	Help = ./softman -h
+#
+##
+
+##
+#
+#	To-do
+#
+#		Add 'dpkg-deb build' required files template creator
+#				include <name>.desktop walkthrough
+#				include man page walkthrough
+#
+#		Add wrapper for 'dpkg-deb --build'
+#				include man page writer and man page gzip function before build
+#
+#		Add option to download and install a package from URL
+#
+#		Add wrappers for configure, c/make & make install
 #
 ##
 
