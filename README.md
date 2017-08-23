@@ -15,7 +15,7 @@ Choose whether to install the program as a system file or whether to use the pro
 * Other options need to be run from the command line (Terminal).
 * Read the Features section of this readme to learn the commandline options.
 
-## The Uninstalled Version
+## The Non Installed Version
 
 * Download the file 'softman'.
 * Make the file executable (desktop users: right-click then select 'executable')
@@ -67,6 +67,10 @@ SYSTEM REPAIR TOOLS
 - -v: Show version number
 
 ## Usage
+
+This guide assumes you are using the non installed version of Softman.
+
+If you installed Softman with the .deb pacakge you must use these commands without the ./ infront of 'softman' e.g. 'softman list' instead of './softman list'.
 
 Use 'softman list' to list installed repositories.
 
