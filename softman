@@ -3,7 +3,7 @@
 
 ##
 #
-#	Softman 1.0.4 (August 2017)
+#	Softman 1.0.7 (September 2017)
 #
 #	Copyright Lee Hodson @VR51
 #
@@ -31,7 +31,7 @@
 #
 #	Options:
 #
-#		upgrade, list, add, remove, purge, find, install, reinstall, flush, fix, findbad, fixbad, fixmissing, build, rebuildsystem
+#		upgrade, list, add, remove, purge, find, install, reinstall, uninstall, package, build, flush, fix, findbad, fixbad, fixmissing, rebuildsystem
 #
 #			upgrade # Upgrades the system software.
 #
@@ -47,6 +47,8 @@
 #			find <package> <package> <package>... # to find package information
 #			install <package> <package> <package>... # to install a package or list of packages with recommended dependencies. Wildcards allowed.
 #			reinstall <package> <package> <package>... # to reinstall a package or list of packages with recommended dependencies. Wildcards allowed.
+#			uninstall <package> <package> <package>.. # to uninstall a package or list of packages.
+#			package: to create a .deb installer. Creates template ready for files to be placed into it.
 #			build # Builds software provided as source.
 #			flush # Cleans the apt cache.
 #
@@ -69,16 +71,13 @@
 #
 #	To-do
 #
-#		Add 'dpkg-deb build' required files template creator
-#				include <name>.desktop walkthrough
-#				include man page walkthrough
-#
-#		Add wrapper for 'dpkg-deb --build'
-#				include man page writer and man page gzip function before build
-#
 #		Add option to download and install a package from URL
 #
 #		Add wrappers for configure, c/make & make install
+#
+#		Rewrite 'package' option to make more concise.
+#			Add a prompt function
+#			Add a directory/file generation function.
 #
 ##
 
@@ -87,7 +86,17 @@
 # Adapt to allow both array and none array variable inputs
 #
 
-version='SoftMan 1.0.4'
+version='SoftMan 1.0.5'
+
+# Locate Where We Are
+filepath="$(pwd)"
+# A Little precaution
+cd "$filepath"
+
+bold=$(tput bold)
+normal=$(tput sgr0)
+
+today=$( date '+%F' )
 
 ## Receive script arguments and process them -- See 'run' at bottom of script
 
@@ -167,7 +176,7 @@ function softman() {
 
 	##
 	#
-	#	Softman 1.0.0
+	#	Softman 1.0.7
 	#
 	#	Install or reinstall packages with build dependencies.
 	#	Update system
@@ -281,11 +290,267 @@ function softman() {
 				apt-get install $options --reinstall "$i"
 		done
 	;;
+	
+	uninstall)
+		for i in ${2}; do
+				apt-get remove "$i"
+		done
+	;;
 
 	build)
 		for i in ${2}; do
 			apt-get $options --compile source "$i"
 		done
+	;;
+	
+	package)
+	
+		name='' # Package name
+		version='' # Program version number
+		number='' # Man type number
+		
+		clear
+		printf "\nWe are about to create a basic .deb package template directory. You must manually put script & program files into the template directory after it is created.\n"
+		printf "\nGuidance will be provided at each step. After the template is created and files have been placed into the template we will build the .deb package.\n"
+
+		printf $bold
+		printf "\nStage 1: The Program's Details\n"
+		printf $normal
+		
+		while : ;	do
+			printf "\nEnter the name of the program:\n"
+			read name
+			
+			case $name in
+			
+				[[:graph:][:blank:]]*)
+					name=$(printf "$name" | sed "s/\s/-/g")
+					break
+				;;
+				
+				*)
+					printf "Use letters, digits and spaces only"
+					
+			esac
+		done
+
+		while : ; do
+		
+			printf "\nEnter the version number of the program:\n"
+			read version
+			
+			case $version in
+			
+				[[:graph:][:blank:]]*)
+					version=$(printf "$version" | sed "s/\s/-/g")
+					break
+				;;
+				
+				*)
+					printf "Use letters, digits and spaces only"
+					
+			esac
+		
+		done
+
+		while : ; do
+		
+			printf "\nEnter the man page number type:\n\n"
+			
+			type=( 'User Commands' 'System Calls' 'C Library Functions' 'Devices and Special Files' 'File Formats and Conventions' 'Games et. al.' 'Miscellanea' 'System Administration tools and Daemons' )
+			
+			n=1
+			for i in "${type[@]}"; do
+				printf "$n: $i\n"
+				let n=n+1
+			done
+			
+			read number
+			
+			case $number in
+			
+				[[:digit:]])
+					break
+				;;
+				
+				*)
+					printf "Use digits 0-9 only"
+					
+			esac
+		
+		done
+		
+		while : ;	do
+			printf "\nEnter the program maintainer's name:\n"
+			read maintainer
+			
+			case $maintainer in
+			
+				[[:graph:][:blank:]]*)
+					break
+				;;
+				
+				*)
+					printf "Use letters, digits and spaces only"
+					
+			esac
+		done
+		
+		while : ;	do
+			printf "\nEnter a brief description of the program:\n"
+			read description
+			
+			case $description in
+			
+				[[:graph:][:blank:]]*)
+					break
+				;;
+				
+				*)
+					printf "Use letters, digits and spaces only"
+					
+			esac
+		done
+
+		while : ;	do
+			printf "\nEnter homepage web address of the program or its maintainer:\n"
+			read homepage
+			
+			case $homepage in
+			
+				[[:graph:][:blank:]]*)
+					break
+				;;
+				
+				*)
+					printf "Use letters, digits and spaces only"
+					
+			esac
+		done
+		clear
+		
+		# Make directories
+		
+		printf $bold
+		printf "\nStage 2: Directory and File Creation\n"
+		printf $normal
+
+		path=( "$name-$version/" "$name-$version/DEBIAN" "$name-$version/usr" "$name-$version/usr/bin" "$name-$version/usr/share" "$name-$version/usr/share/applications" "$name-$version/usr/share/icons" "$name-$version/usr/share/icons/$name" "$name-$version/usr/share/man" "$name-$version/usr/share/man/man$number" )
+
+		for i in "${path[@]}"; do
+			if test ! -d "$filepath/$i"; then
+				mkdir "$filepath/$i"
+			fi
+		done
+
+		# Make essential files
+		
+		files=( "$name-$version/DEBIAN/control" "$name-$version/usr/share/applications/$name.desktop" "$name-$version/usr/share/man/man$number/$name.$number" )
+
+		for i in "${files[@]}"; do
+			if test ! -f "$filepath/$i"; then
+				touch "$filepath/$i"
+			fi
+		done
+
+		# Build control file
+		control=( "Package: $name" "Version: $version" "Maintainer: $maintainer" "Architecture: all" "Description: $description" "Homepage: $homepage" )
+		for i in "${control[@]}"; do
+				printf "$i\n" >> "$filepath/$name-$version/DEBIAN/control"
+		done
+		
+		# Build desktop file
+		desktop=( "[Desktop Entry]" "Type=Application" "Categories=Utilities;Utility" "Name=$name" "Exec=/usr/bin/$name" "Icon=/usr/share/icons/$name/$name" "Terminal=true" )
+		for i in "${desktop[@]}"; do
+				printf "$i\n" >> "$filepath/$name-$version/usr/share/applications/$name.desktop"
+		done
+		
+		# Build example man file
+		manual=( ".TH [$name] [$number] [$today] [$version] [$name]" ".SH NAME" ".B $name" ".SH SYNOPSIS" ".PP" "$description" ".SH DESCRIPTION" ".PP" "$description" ".SH OPTIONS" ".PP" "Example text." ".SS SUB SECTION" ".PP" "More example text." ".SH EXAMPLES" ".PP" ".SH BUGS" ".PP" ".SH AUTHOR" ".PP" ".SH SEE ALSO" ".PP" )
+		for i in "${manual[@]}"; do
+				printf "$i\n" >> "$filepath/$name-$version/usr/share/man/man$number/$name.$number"
+		done
+		
+		printf "\nThe template has been created at $filepath/$bold$name-$version$normal\n"
+		printf "\nYou must edit each of the following files manually before the .deb installation file is created.\n"
+		
+		printf $bold
+		printf "\nFile 1: The Control File\n"
+		printf $normal
+		printf "\nThe control file contains information about the program. This information is shown during program installation.\n"
+		printf "\nA control file has been created in $filepath/$name-$version/DEBIAN/control\n"
+		printf "\nPress any key when ready to move onto the next file.\n"
+		read something
+		clear
+		
+		printf $bold
+		printf "\nFile 2: The Desktop Application File\n"
+		printf $normal
+		printf "\nThe desktop application file tells the operating system where to place the program link in the applications launcher menu.\n"
+		printf "\nA desktop application file has been created in $filepath/$name-$version/usr/share/applications/$name.desktop.\n"
+		printf "\nPress any key when ready to move onto the next file.\n"
+		read something
+		clear
+		
+		printf $bold
+		printf "\nFile 3: The Application Icon\n"
+		printf $normal
+		printf "\nAn icon will help identify the program. Put an SVG icon in $filepath/$name-$version/usr/share/icons/$name.\n"
+		printf "\nThe icon should be named $name.svg\n"
+		printf "\nIcons can be downloaded from iconfinder.com or similar websites, or you can make one.\n"
+		printf "\nPress any key when ready to move onto the next file.\n"
+		read something
+		clear
+
+		printf $bold
+		printf "\nFile 4: The Man File\n"
+		printf $normal
+		printf "\nThe man file is the help file for your program.\n"
+		printf "\nAn example man file has been placed into $name-$version/usr/share/man/man$number.\n"
+		printf "\nPress any key when ready to move onto the next file.\n"
+		read something
+		clear
+
+		printf $bold
+		printf "\nFile 5: The Program File(s)\n"
+		printf $normal
+		printf "\nThe template directory has a very specific structure that must be adhered to. The template is a representation of the operating system's root file structure.\n"
+		printf "\nFiles in the template directory must be placed into template directories as they would be were they placed directly into the root file system.\n"
+		printf "\nFor example, if you place your program file into the template directory $filepath/$name-$version$bold/usr/bin$normal then the .deb installer would install the application file into $bold/usr/bin$normal\n"
+		printf "\n\n"
+		printf "\nThe $bold/usr/bin$normal directory is where user scripts are normally installed. If you place your application file to somewhere else you must configure the desktop application file accordingly.\n"
+		printf "\nPress any key when ready to continue.\n"
+		read something
+		clear
+		
+		printf $bold
+		printf "\nBefore you press another key you must make sure you have edited the Control File, the Desktop Application File, and the Man file, that you have placed the icon file and that the application file(s) have been put into their correct place within the template directory.\n"
+		printf "\nPress the Enter key when ready to build the .deb file\n"
+		printf $normal
+		
+		read something
+		
+		while : ; do
+			case $something in
+				'')
+					printf "Final Check: Press any key to build $name.deb"
+					read something
+					break
+				;;
+				*)
+
+			esac
+		done
+		
+		# Compress man file if exists
+		if test -f "$filepath/$name-$version/usr/share/man/man$number/$name.$number"; then
+			gzip "$filepath/$name-$version/usr/share/man/man$number/$name.$number"
+		fi
+		
+		
+		# Build .deb file
+		dpkg-deb -b $filepath/$name-$version
+		
 	;;
 	
 	flush)
@@ -392,6 +657,8 @@ ${bold}SOFTWARE TOOLS${normal}
 	${bold}find${normal}: locate a package or list of packages available for installation. Wildcards allowed.
 	${bold}install${normal}: install software with suggested build dependent packages. Wildcards allowed.
 	${bold}reinstall${normal}: reinstall software with suggested build dependent packages. Wildcards allowed.
+	${bold}uninstall${normal}: uninstall software. Wildcards allowed.
+	${bold}package${normal}: create .deb package. This builds the template structure for a .deb package along with control file, application file and man file. You must manually place files into the template.
 	${bold}build${normal}: download package source files and compile into a .deb binary file ready for installation
 	${bold}flush${normal}: clear the download cache and automatically remove packages that are no longer required.
 	
