@@ -1,7 +1,7 @@
 # Ubuntu/Debian Linux Software Update, Software Manager, .deb Builder & OS (Software) Repair Tool
-Simple program to put on your desktop to click to run system updates. Softman is mostly a wrapper for frequently used apt-get command sequences but has several bonus tools such as system software repair tools and a .deb template creator.
+Simple program to put on your desktop to click to run system updates. Softman is mostly a wrapper for frequently used apt command sequences but has several bonus tools such as system software repair tools and a .deb template creator.
 
-When clicked, Softman will run apt-get update, upgrade, dist-upgrade, full-upgrade and clean. Other run options are described below.
+When clicked, Softman will run apt update, upgrade, dist-upgrade, full-upgrade and clean. Other run options are described below.
 
 Choose whether to install the program as a system file or whether to use the program without installation.
 
@@ -68,7 +68,7 @@ SYSTEM REPAIR TOOLS
 
 ## Commandline Option Flags
 
-- -u: Run apt-get update
+- -u: Run apt update
 - -h: Show helpfile
 - -v: Show version number
 
@@ -108,7 +108,7 @@ Use 'softman find' to search for software available in the installed repositorie
 ./softman find gimp php* alsa*
 ```
 
-Use 'softman install' and 'softman reinstall' as you would apt-get install, i.e. list packages after the command, e.g.
+Use 'softman install' and 'softman reinstall' as you would apt install, i.e. list packages after the command, e.g.
 
 ```
 sudo ./softman install vlc gimp kate
@@ -158,7 +158,7 @@ This began as a simple system update script to keep on the desktop and click to 
 
 SoftMan (Software Manager) is part of a library of scripts I wrote and frequently use in Linux projects. This library will soon be released on Github for others to make use of in their own Bash projects.
 
-The update script released to this Github repo is a selfcontained version of an update and software (re)installation script. It is mostly a wrapper for frequently used apt-get command sequences but also includes commands to automatically reinstall software packages that contain corrupt files (e.g. after hardware crash, malware infection or self-inflicted damage when a script runs amock).
+The update script released to this Github repo is a selfcontained version of an update and software (re)installation script. It is mostly a wrapper for frequently used apt command sequences but also includes commands to automatically reinstall software packages that contain corrupt files (e.g. after hardware crash, malware infection or self-inflicted damage when a script runs amock).
 
 ## Why?
 Because opening a terminal to run updates is too much hassle and I'm too lazy to use GUI options that take forever to load. Plus, I needed an update library and installer for other scripts.
