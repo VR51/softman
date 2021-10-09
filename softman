@@ -3,7 +3,7 @@
 
 ##
 #
-#	Softman 1.0.7 (September 2017)
+#	Softman 1.0.8 (October 2021)
 #
 #	Copyright Lee Hodson @VR51
 #
@@ -31,7 +31,7 @@
 #
 #	Options:
 #
-#		upgrade, list, add, remove, purge, find, install, reinstall, uninstall, package, build, flush, fix, findbad, fixbad, fixmissing, rebuildsystem
+#		upgrade, list, add, remove, purge, find, install, reinstall, uninstall, package, build, flush, fix, fixlanf, findbad, fixbad, fixmissing, rebuildsystem
 #
 #			upgrade # Upgrades the system software.
 #
@@ -55,13 +55,14 @@
 #		System Repair Tools
 #
 #			fix # to attempt to fix packages with broken dependencies and/or repair a slightly broken system.
+#			fixlang # to install missing language packages.
 #			findbad # Attempts to find software with corrupt files
 #			fixbad # Attempts to fix software with corrupt files
 #			fixmissing # Attempts to fix software that is broken because of missing files
 #			rebuildsystem # Attempts to fully re-install / rebuild all software currently installed in the system.
 #
 #
-#		Run with -u to update software repositories (equivalent to apt-get update)
+#		Run with -u to update software repositories (equivalent to apt update)
 #
 #	Help = ./softman -h
 #
@@ -108,7 +109,7 @@ function softman_run() {
 		
 		u)
 		
-			apt-get update
+			apt update
 			shift
 		;;
 		
@@ -176,17 +177,17 @@ function softman() {
 
 	##
 	#
-	#	Softman 1.0.7
+	#	Softman 1.0.8
 	#
 	#	Install or reinstall packages with build dependencies.
 	#	Update system
 	#	Build binaries from source
 	#
-	#		Written to solve a Linux World problem
+	#	Written to solve a Linux World problem
 	#
 	#	softman arg args
 	#
-	#	@1 = upgrade, list, add, remove, purge, find, install, reinstall, build, flush, fix, findbad, fixbad, rebuildsystem:
+	#	@1 = upgrade, list, add, remove, purge, find, install, reinstall, build, flush, fix, fixlang, findbad, fixbad, rebuildsystem:
 	#				are we to list all installed repositories;
 	#				are we to add a repository;
 	#				are we to remove a repository;
@@ -196,10 +197,11 @@ function softman() {
 	#				are we to re-install every package with rebuildsystem?
 	#				are we to compile a .deb from source;
 	#				are we to fix a broken package;
+	#				are we to fix missing language packages;
 	#				are we to clean the cache;
 	#				are we to find or fix installed packages that are corrupted;
 	#				are we to find and reinstall packages with missing files;
-		#	@2 = list of packages to (re)install: space separated list of packages.
+	#	@2 = list of packages to (re)install: space separated list of packages.
 	# 
 	#	Copyright Lee Hodson @ VR51 & JournalXtra
 	#
@@ -217,20 +219,20 @@ function softman() {
 	case $1 in
 	
 	launch)
-		sudo apt-get update
-		sudo apt-get $options upgrade
-		sudo apt-get $options dist-upgrade
-		sudo apt-get $options full-upgrade
-		sudo apt-get clean
-		sudo apt-get autoremove
+		sudo apt update
+		sudo apt $options upgrade
+		sudo apt $options dist-upgrade
+		sudo apt $options full-upgrade
+		sudo apt clean
+		sudo apt autoremove
 		softman_message 'upgrade'
 		read something
 	;;
 	
 	upgrade)
-		apt-get $options upgrade
-		apt-get $options dist-upgrade
-		apt-get $options full-upgrade
+		apt $options upgrade
+		apt $options dist-upgrade
+		apt $options full-upgrade
 		
 	;;
 
@@ -243,7 +245,7 @@ function softman() {
 			add-apt-repository "$i"
 		done
 		
-		apt-get update
+		apt update
 	;;
 
 	remove)
@@ -251,7 +253,7 @@ function softman() {
 			add-apt-repository --remove "$i"
 		done
 
-		apt-get update
+		apt update
 	;;
 
 	purge)
@@ -264,7 +266,7 @@ function softman() {
 			softman purge ${2}
 		fi
 
-		apt-get update
+		apt update
 	;;
 
 	find)
@@ -279,27 +281,27 @@ function softman() {
 
 	install)
 		for i in ${2}; do
-				apt-get $_options build-dep "$i"
-				apt-get $options install "$i"
+				apt $_options build-dep "$i"
+				apt $options install "$i"
 		done
 	;;
 
 	reinstall)
 		for i in ${2}; do
-				apt-get $_options build-dep "$i"
-				apt-get install $options --reinstall "$i"
+				apt $_options build-dep "$i"
+				apt install $options --reinstall "$i"
 		done
 	;;
 	
 	uninstall)
 		for i in ${2}; do
-				apt-get remove "$i"
+				apt remove "$i"
 		done
 	;;
 
 	build)
 		for i in ${2}; do
-			apt-get $options --compile source "$i"
+			apt $options --compile source "$i"
 		done
 	;;
 	
@@ -554,18 +556,22 @@ function softman() {
 	;;
 	
 	flush)
-		apt-get clean
-		apt-get autoremove
+		apt clean
+		apt autoremove
 	;;
 
 	fix)
-		sudo apt-get install -f
+		sudo apt install -f
 		sudo dpkg --configure -a
+	;;
+	
+	fixlang)
+		sudo apt install -f $(check-language-support)
 	;;
 	
 	findbad)
 		if command -v debsums > /dev/null 2>&1; then
-				apt-get clean
+				apt clean
 				debsums_init ; debsums -cs
 				# debsums -es
 		else
@@ -576,8 +582,8 @@ function softman() {
 
 	fixbad)
 		if command -v debsums > /dev/null 2>&1; then
-				apt-get clean
-				apt-get install $options --reinstall $(dpkg -S $(debsums -c) | cut -d : -f 1 | sort -u)
+				apt clean
+				apt install $options --reinstall $(dpkg -S $(debsums -c) | cut -d : -f 1 | sort -u)
 		else
 				softman install debsums
 				softman fixbad
@@ -587,8 +593,8 @@ function softman() {
 
 	fixmissing)
 		if command -v debsums > /dev/null 2>&1; then
-				apt-get clean
-				debsums -c 2>&1 | cut -d " " -f 4 | sort -u | xargs -rd '\n' -- dpkg -S | cut -d : -f 1 | sort -u | xargs -rd '\n' -- apt-get install $options --reinstall
+				apt clean
+				debsums -c 2>&1 | cut -d " " -f 4 | sort -u | xargs -rd '\n' -- dpkg -S | cut -d : -f 1 | sort -u | xargs -rd '\n' -- apt install $options --reinstall
 		else
 				softman install debsums
 				softman fixmissing
@@ -596,7 +602,7 @@ function softman() {
 	;;
 	
 	rebuildsystem)
-			dpkg -l | grep '^ii ' | sed 's/  */\t/g' |cut -f 2,3 | sed 's/\t/=/' | xargs apt-get install --reinstall -y --ignore-missing
+			dpkg -l | grep '^ii ' | sed 's/  */\t/g' |cut -f 2,3 | sed 's/\t/=/' | xargs apt install --reinstall -y --ignore-missing
 			
 			# See: http://unix.stackexchange.com/questions/79028/debian-install-missing-man-pages
 	;;
@@ -628,7 +634,7 @@ cat <<HELP
 
 ${bold}SOFTMAN${normal}
 
-SoftMan (Software Manager) is mostly a wrapper around frequently used apt-get command sequences, plus a few repair tools. Beside the repair tools, the main difference between softman and apt-get is that softman always grabs build dependencies before it installs requested packages.
+SoftMan (Software Manager) is mostly a wrapper around frequently used apt command sequences, plus a few repair tools. Beside the repair tools, the main difference between softman and apt is that softman always grabs build dependencies before it installs requested packages.
 
 ${bold}USAGE${normal}
 
@@ -637,7 +643,7 @@ ${bold}USAGE${normal}
 
 ${bold}FLAGS${normal}
 
-	${bold}-u${normal} is equivalent to sudo apt-get update
+	${bold}-u${normal} is equivalent to sudo apt update
 
 ${bold}OPTIONS${normal}
 
@@ -665,6 +671,7 @@ ${bold}SOFTWARE TOOLS${normal}
 ${bold}SYSTEM REPAIR TOOLS${normal}
 
 	${bold}fix${normal}: fix broken packages and configure partially installed software.
+	${bold}fixlang${normal}: fix missing language packages.
 	${bold}findbad${normal}: find packages with corrupt files / find packages with missing files.
 	${bold}fixbad${normal}: find curupt software and automatically reinstall their packages. Use with caution.
 	${bold}fixmissing${normal}: find software with missing files and automatically reinstall their packages. Use with caution.
