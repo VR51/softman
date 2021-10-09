@@ -60,6 +60,7 @@ SOFTWARE MANAGEMENT
 SYSTEM REPAIR TOOLS
 
 - fix: fix broken packages and configure any partially installed software
+- fixlang: fix missing language packages
 - findbad: find packages with corrupt files / find packages with missing files
 - fixbad: find currupt software and automatically reinstall their packages. Use with caution.
 - fixmissing: find software with missing files and automatically reinstall their packages. Use with caution.
@@ -163,6 +164,11 @@ The update script released to this Github repo is a selfcontained version of an 
 Because opening a terminal to run updates is too much hassle and I'm too lazy to use GUI options that take forever to load. Plus, I needed an update library and installer for other scripts.
 
 # Changelog
+
+1.0.8
+
+- Replaced apt-get with apt
+- Added option to fix missing language packages
 
 1.0.7
 
